@@ -152,6 +152,19 @@ int __cdecl main(int argc, char* argv[])
 	// initialize sound
 		
 	AudioInit();
+
+	GLuint fbopart[2];
+	GLuint texturePart[2];
+
+	glGenTextures(2, texturePart);
+	glGenFramebuffers(2, fbopart);
+	for (int i = 0; i < 2; ++i) {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbopart[i]);
+
+		glBindTexture(GL_TEXTURE_2D, texturePart[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, XRES, YRES, 0, GL_LUMINANCE_ALPHA, GL_FLOAT, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texturePart[i], 0);
+	}
 		
 	// main loop
 	do
@@ -177,7 +190,8 @@ int __cdecl main(int argc, char* argv[])
 		// MAIN RENDERING //
 		////////////////////////////
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_2D, texturePart[1]);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbopart[0]);
 		glUseProgram(pidMain);
 				
 		#ifdef EDITOR_CONTROLS
@@ -203,14 +217,16 @@ int __cdecl main(int argc, char* argv[])
 		// POST-PROCESS //
 		//////////////////
 
-		glBindTexture(GL_TEXTURE_2D, 1);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
+		//glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, XRES, YRES, 0);
 		
 		glActiveTexture(GL_TEXTURE0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_2D, texturePart[0]);
 
 		glUseProgram(pidPost);
 
@@ -218,6 +234,13 @@ int __cdecl main(int argc, char* argv[])
 		glUniform1i(glGetUniformLocation(pidPost, TIME_VAR_NAME), AudioGetTime());
 
 		glRects(-1, -1, 1, 1);
+
+		GLuint tmp = texturePart[0];
+		texturePart[0] = texturePart[1];
+		texturePart[1] = tmp;
+		GLuint tmp2 = fbopart[0];
+		fbopart[0] = fbopart[1];
+		fbopart[1] = tmp2;
 
 		SwapBuffers(hDC);
 
