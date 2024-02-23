@@ -59,7 +59,7 @@ PID_QUALIFIER int pidPost;
 
 #define TIME_VAR_NAME "m"
 #define PRETIME_VAR_NAME "pm"
-#define NEED_PREVTIME 0
+#define NEED_PREVTIME 1
 #if NEED_PREVTIME
 int prevTime=0;
 #endif
