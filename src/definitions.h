@@ -11,7 +11,7 @@
 #include <GL/gl.h>
 
 // global resolution
-#if 1
+#if 0
 	#define XRES 1920
 	#define YRES 1080
 #elif 0
